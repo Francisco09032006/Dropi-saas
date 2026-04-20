@@ -3,11 +3,14 @@
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { AgentConfig } from "@/lib/agents/prompts";
+import { ACTIVE_AGENTS } from "@/lib/agents/sections";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 export function Chat({ agent }: { agent: AgentConfig }) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -86,30 +89,42 @@ export function Chat({ agent }: { agent: AgentConfig }) {
 
   return (
     <div className="flex flex-col h-screen max-h-screen">
-      <header className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <header className="border-b border-[var(--border)] bg-[var(--card)] px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/"
-            className="text-[var(--muted)] hover:text-[var(--fg)] text-sm"
+            className="text-[var(--muted)] hover:text-[var(--fg)] text-sm shrink-0"
           >
-            ← Atrás
+            ←
           </Link>
-          <span className="text-2xl">{agent.emoji}</span>
-          <div>
-            <h1 className="font-semibold">{agent.name}</h1>
-            <p className="text-xs text-[var(--muted)]">{agent.description}</p>
+          <span className="text-2xl shrink-0">{agent.emoji}</span>
+          <div className="min-w-0">
+            <h1 className="font-semibold truncate">{agent.name}</h1>
+            <p className="text-xs text-[var(--muted)] truncate hidden sm:block">
+              {agent.description}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-[var(--muted)] font-mono">
-            {agent.model}
-          </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <select
+            value={agent.id}
+            onChange={(e) => router.push(`/agent/${e.target.value}`)}
+            className="text-xs bg-[#1a1a1a] border border-[var(--border)] rounded-md px-2 py-1 hover:border-[var(--accent)] cursor-pointer max-w-[140px]"
+            title="Cambiar de agente"
+          >
+            {ACTIVE_AGENTS.map((a) => (
+              <option key={a.agentId} value={a.agentId}>
+                {a.emoji} {a.name}
+              </option>
+            ))}
+          </select>
           {messages.length > 0 && (
             <button
               onClick={reset}
               className="text-xs text-[var(--muted)] hover:text-[var(--fg)] border border-[var(--border)] px-3 py-1 rounded-md"
+              title="Limpiar conversación"
             >
-              Nueva conversación
+              Nueva
             </button>
           )}
         </div>
